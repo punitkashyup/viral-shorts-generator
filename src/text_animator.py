@@ -245,11 +245,12 @@ class TextAnimator:
             )
             
             # Position at bottom third of screen (MoviePy 2.x)
-            txt_clip = txt_clip.with_position(('center', video_h * 0.7))
+            y_position = int(video_h * 0.7)
+            txt_clip = txt_clip.with_position(('center', y_position))
             
-            # Apply animation
+            # Apply animation (pass video_h for position calculations)
             txt_clip = self._apply_animation(
-                txt_clip, animation_type, duration
+                txt_clip, animation_type, duration, video_h
             )
             
             # Set timing (MoviePy 2.x)
@@ -265,9 +266,14 @@ class TextAnimator:
         self,
         clip: TextClip,
         animation_type: str,
-        duration: float
+        duration: float,
+        video_h: int = 1920
     ) -> TextClip:
         """Apply animation effect to text clip."""
+        
+        # Calculate pixel positions
+        base_y = int(video_h * 0.7)
+        start_y = int(video_h * 0.85)
         
         if animation_type == "fade_in":
             # Fade in effect - use opacity function
@@ -279,11 +285,12 @@ class TextAnimator:
             clip = clip.with_opacity(fade_in_opacity)
             
         elif animation_type == "slide_up":
-            # Slide up from bottom
+            # Slide up from bottom (use pixel coordinates)
             def slide_up(t):
                 if t < 0.3:
-                    return ('center', 0.85 - (0.15 * (t / 0.3)))
-                return ('center', 0.7)
+                    y = start_y - int((start_y - base_y) * (t / 0.3))
+                    return ('center', y)
+                return ('center', base_y)
             clip = clip.with_position(slide_up)
             
         elif animation_type == "pop":
@@ -314,12 +321,12 @@ class TextAnimator:
             clip = clip.with_opacity(typewriter_fade)
             
         elif animation_type == "shake":
-            # Shake effect for emphasis
+            # Shake effect for emphasis (use pixel coordinates)
             def shake(t):
                 if t < 0.2:
-                    offset = 5 * math.sin(t * 50)
-                    return ('center', 0.7 + offset / 1000)
-                return ('center', 0.7)
+                    offset = int(5 * math.sin(t * 50))
+                    return ('center', base_y + offset)
+                return ('center', base_y)
             clip = clip.with_position(shake)
             
         elif animation_type == "glow":
