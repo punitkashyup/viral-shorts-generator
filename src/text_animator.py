@@ -80,8 +80,8 @@ class TextAnimator:
         # Composite video with text
         final_video = CompositeVideoClip([video] + text_clips)
         
-        # Set duration
-        final_video = final_video.set_duration(video_duration)
+        # Set duration (MoviePy 2.x)
+        final_video = final_video.with_duration(video_duration)
         
         # Generate output path
         if output_path is None:
@@ -244,16 +244,16 @@ class TextAnimator:
                 align='center'
             )
             
-            # Position at bottom third of screen
-            txt_clip = txt_clip.set_position(('center', video_h * 0.7))
+            # Position at bottom third of screen (MoviePy 2.x)
+            txt_clip = txt_clip.with_position(('center', video_h * 0.7))
             
             # Apply animation
             txt_clip = self._apply_animation(
                 txt_clip, animation_type, duration
             )
             
-            # Set timing
-            txt_clip = txt_clip.set_start(start).set_duration(duration)
+            # Set timing (MoviePy 2.x)
+            txt_clip = txt_clip.with_start(start).with_duration(duration)
             
             return txt_clip
             
@@ -270,8 +270,13 @@ class TextAnimator:
         """Apply animation effect to text clip."""
         
         if animation_type == "fade_in":
-            # Fade in effect
-            clip = clip.crossfadein(min(0.3, duration / 3))
+            # Fade in effect - use opacity function
+            fade_duration = min(0.3, duration / 3)
+            def fade_in_opacity(t):
+                if t < fade_duration:
+                    return t / fade_duration
+                return 1.0
+            clip = clip.with_opacity(fade_in_opacity)
             
         elif animation_type == "slide_up":
             # Slide up from bottom
@@ -279,7 +284,7 @@ class TextAnimator:
                 if t < 0.3:
                     return ('center', 0.85 - (0.15 * (t / 0.3)))
                 return ('center', 0.7)
-            clip = clip.set_position(slide_up)
+            clip = clip.with_position(slide_up)
             
         elif animation_type == "pop":
             # Pop/scale effect (zoom in quickly then settle)
@@ -292,12 +297,21 @@ class TextAnimator:
                     scale = 1.0
                 return scale
             
-            clip = clip.resize(lambda t: pop_effect(t))
-            clip = clip.crossfadein(0.1)
+            clip = clip.resized(pop_effect)
+            # Add fade in
+            def pop_fade(t):
+                if t < 0.1:
+                    return t / 0.1
+                return 1.0
+            clip = clip.with_opacity(pop_fade)
             
         elif animation_type == "typewriter":
-            # Typewriter effect (handled differently - show progressively)
-            clip = clip.crossfadein(0.05)
+            # Typewriter effect - quick fade
+            def typewriter_fade(t):
+                if t < 0.05:
+                    return t / 0.05
+                return 1.0
+            clip = clip.with_opacity(typewriter_fade)
             
         elif animation_type == "shake":
             # Shake effect for emphasis
@@ -306,13 +320,13 @@ class TextAnimator:
                     offset = 5 * math.sin(t * 50)
                     return ('center', 0.7 + offset / 1000)
                 return ('center', 0.7)
-            clip = clip.set_position(shake)
+            clip = clip.with_position(shake)
             
         elif animation_type == "glow":
             # Simple glow effect via opacity pulse
             def glow_opacity(t):
                 return 0.8 + 0.2 * math.sin(t * 6)
-            clip = clip.set_opacity(glow_opacity)
+            clip = clip.with_opacity(glow_opacity)
         
         return clip
 

@@ -43,8 +43,8 @@ class VideoClipper:
         # Load video
         video = VideoFileClip(str(video_path))
         
-        # Extract subclip
-        clip = video.subclip(start_time, min(end_time, video.duration))
+        # Extract subclip (MoviePy 2.x uses subclipped instead of subclip)
+        clip = video.subclipped(start_time, min(end_time, video.duration))
         
         # Crop to vertical format if requested
         if crop_to_vertical:
@@ -89,7 +89,7 @@ class VideoClipper:
             x_center = original_w // 2
             x1 = x_center - new_w // 2
             x2 = x_center + new_w // 2
-            clip = clip.crop(x1=x1, x2=x2)
+            clip = clip.cropped(x1=x1, x2=x2)
         else:
             # Video is taller than target - crop height
             new_w = original_w
@@ -97,10 +97,10 @@ class VideoClipper:
             y_center = original_h // 2
             y1 = y_center - new_h // 2
             y2 = y_center + new_h // 2
-            clip = clip.crop(y1=y1, y2=y2)
+            clip = clip.cropped(y1=y1, y2=y2)
         
-        # Resize to target resolution
-        clip = clip.resize(newsize=OUTPUT_RESOLUTION)
+        # Resize to target resolution (MoviePy 2.x uses resized)
+        clip = clip.resized(newsize=OUTPUT_RESOLUTION)
         
         return clip
     
