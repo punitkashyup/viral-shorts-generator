@@ -1,0 +1,17 @@
+# YouTube Download
+yt-dlp>=2024.1.0
+
+# Video/Audio Processing
+moviepy>=1.0.3
+Pillow>=10.0.0
+
+# Speech-to-Text (Whisper)
+openai-whisper>=20231117
+
+# AI Hook Analysis
+openai>=1.0.0
+
+# Environment & CLI
+python-dotenv>=1.0.0
+rich>=13.0.0
+click>=8.0.0
