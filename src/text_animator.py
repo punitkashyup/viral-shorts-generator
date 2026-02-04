@@ -231,17 +231,17 @@ class TextAnimator:
             # Adjust font size for sentences vs words
             font_size = self.font_size if not is_sentence else int(self.font_size * 0.8)
             
-            # Create base text clip
+            # Create base text clip (MoviePy 2.x API: font is first arg)
             txt_clip = TextClip(
-                text,
-                font_size=font_size,
                 font=self.font,
+                text=text,
+                font_size=font_size,
                 color=self.text_color,
                 stroke_color=self.stroke_color,
                 stroke_width=self.stroke_width,
                 method='caption',
                 size=(int(video_w * 0.9), None),
-                align='center'
+                text_align='center'
             )
             
             # Position at bottom third of screen (MoviePy 2.x)
