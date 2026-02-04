@@ -234,7 +234,7 @@ class TextAnimator:
             # Create base text clip
             txt_clip = TextClip(
                 text,
-                fontsize=font_size,
+                font_size=font_size,
                 font=self.font,
                 color=self.text_color,
                 stroke_color=self.stroke_color,

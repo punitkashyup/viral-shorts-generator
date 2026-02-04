@@ -100,7 +100,7 @@ class VideoClipper:
             clip = clip.cropped(y1=y1, y2=y2)
         
         # Resize to target resolution (MoviePy 2.x uses resized)
-        clip = clip.resized(newsize=OUTPUT_RESOLUTION)
+        clip = clip.resized(new_size=OUTPUT_RESOLUTION)
         
         return clip
     
