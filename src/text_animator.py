@@ -94,9 +94,7 @@ class TextAnimator:
             str(output_path),
             codec='libx264',
             audio_codec='aac',
-            fps=OUTPUT_FPS,
-            verbose=False,
-            logger=None
+            fps=OUTPUT_FPS
         )
         
         # Clean up

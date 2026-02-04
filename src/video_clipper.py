@@ -61,9 +61,7 @@ class VideoClipper:
             codec='libx264',
             audio_codec='aac',
             temp_audiofile=str(self.output_dir / "temp_audio.m4a"),
-            remove_temp=True,
-            verbose=False,
-            logger=None
+            remove_temp=True
         )
         
         # Clean up

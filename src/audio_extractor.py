@@ -40,9 +40,7 @@ class AudioExtractor:
             str(audio_path),
             fps=16000,  # 16kHz sample rate for Whisper
             nbytes=2,   # 16-bit audio
-            codec='pcm_s16le' if output_format == 'wav' else None,
-            verbose=False,
-            logger=None
+            codec='pcm_s16le' if output_format == 'wav' else None
         )
         
         video.close()
