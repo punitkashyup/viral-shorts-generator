@@ -29,11 +29,15 @@ OUTPUT_RESOLUTION = (1080, 1920)  # 9:16 aspect ratio for shorts
 OUTPUT_FPS = 30
 
 # Text Animation Settings
-DEFAULT_FONT = "Arial-Bold"
+# Set to None to use system default font, or path like "/Library/Fonts/Arial Unicode.ttf"
+DEFAULT_FONT = None  # None = system default font
 DEFAULT_FONT_SIZE = 70
 DEFAULT_TEXT_COLOR = "white"
 DEFAULT_STROKE_COLOR = "black"
 DEFAULT_STROKE_WIDTH = 3
+
+# Crop Mode: "crop" (center crop) or "letterbox" (add black bars, preserve content)
+CROP_MODE = os.getenv("CROP_MODE", "letterbox")
 
 # Animation types
 ANIMATION_TYPES = ["fade_in", "slide_up", "pop", "typewriter", "shake", "glow"]

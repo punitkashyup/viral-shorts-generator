@@ -2,10 +2,10 @@
 
 from pathlib import Path
 from typing import Optional, Dict, Tuple
-from moviepy import VideoFileClip, CompositeVideoClip
+from moviepy import VideoFileClip, CompositeVideoClip, ColorClip
 from rich.console import Console
 
-from .config import TEMP_DIR, OUTPUT_RESOLUTION
+from .config import TEMP_DIR, OUTPUT_RESOLUTION, CROP_MODE
 
 console = Console()
 
@@ -13,9 +13,10 @@ console = Console()
 class VideoClipper:
     """Extract and resize video segments for shorts."""
     
-    def __init__(self, output_dir: Optional[Path] = None):
+    def __init__(self, output_dir: Optional[Path] = None, crop_mode: Optional[str] = None):
         self.output_dir = output_dir or TEMP_DIR
         self.output_dir.mkdir(exist_ok=True)
+        self.crop_mode = crop_mode or CROP_MODE  # "crop" or "letterbox"
     
     def clip(
         self,
@@ -33,7 +34,7 @@ class VideoClipper:
             start_time: Start time in seconds
             end_time: End time in seconds
             output_name: Optional output filename
-            crop_to_vertical: Whether to crop to 9:16 aspect ratio
+            crop_to_vertical: Whether to convert to 9:16 aspect ratio
             
         Returns:
             Path to the clipped video
@@ -46,9 +47,9 @@ class VideoClipper:
         # Extract subclip (MoviePy 2.x uses subclipped instead of subclip)
         clip = video.subclipped(start_time, min(end_time, video.duration))
         
-        # Crop to vertical format if requested
+        # Convert to vertical format if requested
         if crop_to_vertical:
-            clip = self._crop_to_vertical(clip)
+            clip = self._convert_to_vertical(clip)
         
         # Generate output path
         if output_name is None:
@@ -71,10 +72,54 @@ class VideoClipper:
         console.print(f"[bold green]✅ Clip saved:[/] {output_path.name}")
         return output_path
     
+    def _convert_to_vertical(self, clip: VideoFileClip) -> VideoFileClip:
+        """
+        Convert video to 9:16 vertical format.
+        Uses crop_mode setting: "crop" or "letterbox"
+        """
+        if self.crop_mode == "letterbox":
+            return self._letterbox_to_vertical(clip)
+        else:
+            return self._crop_to_vertical(clip)
+    
+    def _letterbox_to_vertical(self, clip: VideoFileClip) -> CompositeVideoClip:
+        """
+        Convert to vertical with letterboxing (black bars).
+        Preserves all original content without cropping.
+        """
+        original_w, original_h = clip.size
+        target_w, target_h = OUTPUT_RESOLUTION  # 1080x1920
+        
+        # Calculate scale to fit width
+        scale = target_w / original_w
+        new_w = target_w
+        new_h = int(original_h * scale)
+        
+        # Resize video to fit width
+        resized_clip = clip.resized(new_size=(new_w, new_h))
+        
+        # Create black background
+        bg = ColorClip(size=OUTPUT_RESOLUTION, color=(0, 0, 0))
+        bg = bg.with_duration(clip.duration)
+        
+        # Center the video vertically
+        y_position = (target_h - new_h) // 2
+        positioned_clip = resized_clip.with_position(('center', y_position))
+        
+        # Composite
+        final = CompositeVideoClip([bg, positioned_clip], size=OUTPUT_RESOLUTION)
+        final = final.with_duration(clip.duration)
+        
+        # Copy audio
+        if clip.audio:
+            final = final.with_audio(clip.audio)
+        
+        return final
+    
     def _crop_to_vertical(self, clip: VideoFileClip) -> VideoFileClip:
         """
         Crop video to 9:16 vertical aspect ratio.
-        Centers on the middle of the frame (good for talking head videos).
+        Centers on the middle of the frame (may cut content).
         """
         original_w, original_h = clip.size
         target_w, target_h = OUTPUT_RESOLUTION  # 1080x1920
